@@ -67,8 +67,8 @@
     </properties>
 
     <scm>
-        <connection>scm:dummy:uri</connection>
-        <developerConnection>scm:dummy:uri</developerConnection>
+        <connection>https://github.com/Jahia/infrastructure-utils.git</connection>
+        <developerConnection>https://github.com/Jahia/infrastructure-utils.git</developerConnection>
     </scm>
 
     <repositories>
