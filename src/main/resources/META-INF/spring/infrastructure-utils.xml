@@ -3,7 +3,17 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
-    <bean id="httpServiceListener" class="org.jahia.modules.infrastructure.servlet.FullReadonlyModeServlet" />
+    <bean id="httpServiceListener" class="org.jahia.modules.infrastructure.servlet.HttpServiceListener">
+        <property name="servlets">
+            <map>
+                <entry key="readonlymode">
+                    <bean class="org.jahia.modules.infrastructure.servlet.FullReadonlyModeServlet">
+                        <property name="requiredPermission" value="readonlyMode" />
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
 
     <osgi:reference id="httpService" interface="org.osgi.service.http.HttpService">
         <osgi:listener ref="httpServiceListener" bind-method="onBind" unbind-method="onUnbind" />
