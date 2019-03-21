@@ -25,8 +25,8 @@ public class ModuleVersionsPurgeActivator implements BundleActivator {
     @Override
     public void start(BundleContext context) throws Exception {
         if (!SettingsBean.getInstance().isProcessingServer()) return;
-        final String isActive = SettingsBean.getInstance().getPropertiesFile().getProperty("modules.versions.autoPurge", "false");
-        if (!"true".equalsIgnoreCase(isActive.trim())) return;
+        final boolean isActive = Boolean.parseBoolean(SettingsBean.getInstance().getPropertiesFile().getProperty("modules.versions.autoPurge", "false"));
+        if (isActive) return;
 
         context.addBundleListener(bundleListener = new BundleListener() {
 

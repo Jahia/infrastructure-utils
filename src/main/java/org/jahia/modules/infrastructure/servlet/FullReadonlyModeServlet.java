@@ -121,7 +121,7 @@ public class FullReadonlyModeServlet extends HttpServlet implements BundleContex
 
         try {
             final JCRSessionWrapper session = JCRSessionFactory.getInstance().getCurrentUserSession();
-            return session.getUser().isRoot();
+            return session.getNode("/sites/systemsite").hasPermission("readonlyMode");
         } catch (RepositoryException e) {
             logger.error("", e);
             return false;
