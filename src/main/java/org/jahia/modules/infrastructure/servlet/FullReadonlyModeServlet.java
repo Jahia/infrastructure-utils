@@ -38,6 +38,7 @@ public class FullReadonlyModeServlet extends AbstractJsonProducer {
                     }
                     break;
                 case StringUtils.EMPTY:
+                case "/":
                     break;
                 default:
                     logger.error("Unexpected action type: " + action);
