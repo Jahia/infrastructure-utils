@@ -11,6 +11,11 @@
                         <property name="requiredPermission" value="readonlyMode" />
                     </bean>
                 </entry>
+                <entry key="sitesinfo">
+                    <bean class="org.jahia.modules.infrastructure.servlet.SiteInfosServlet">
+                        <!--property name="requiredPermission" value="readonlyMode" /-->
+                    </bean>
+                </entry>
             </map>
         </property>
     </bean>
