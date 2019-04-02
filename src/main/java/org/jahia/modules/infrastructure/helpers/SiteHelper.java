@@ -52,11 +52,8 @@ public class SiteHelper {
                         final String propertyPath = property.getPath();
                         if (binaries.containsKey(propertyPath)) continue;
                         try {
-                            final InputStream stream = property.getBinary().getStream();
-                            long bytesRead = 0L;
-                            while (stream.read() != -1) bytesRead++;
-                            binaries.put(propertyPath, bytesRead);
-                        } catch (DataStoreException | IOException e) {
+                            binaries.put(propertyPath, property.getBinary().getSize());
+                        } catch (DataStoreException e) {
                             logger.error("", e);
                         }
                     }
