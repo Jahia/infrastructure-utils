@@ -3,6 +3,7 @@ package org.jahia.modules.infrastructure.servlet;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.services.content.JCRSessionFactory;
 import org.jahia.services.content.JCRSessionWrapper;
+import org.jahia.utils.DateUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public abstract class AbstractJsonProducer extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        final long start = System.currentTimeMillis();
         final JSONObject result = new JSONObject();
         final PrintWriter writer = response.getWriter();
         disableClientSideCache(response);
@@ -35,14 +37,15 @@ public abstract class AbstractJsonProducer extends HttpServlet {
             } else {
                 doGetInternal(request, response, result);
             }
+            result.put("duration", DateUtils.formatDurationWords(System.currentTimeMillis() - start));
         } catch (JSONException e) {
-            logger.error("", e);  //TODO: review me, I'm generated
+            logger.error("", e);
         }
 
         writer.println(result.toString());
     }
 
-    abstract protected void doGetInternal(HttpServletRequest request, HttpServletResponse response, JSONObject result);
+    abstract protected void doGetInternal(HttpServletRequest request, HttpServletResponse response, JSONObject result) throws JSONException;
 
     private void disableClientSideCache(HttpServletResponse response) {
         response.setHeader("Expires", "Mon, 26 Jul 1990 05:00:00 GMT");
@@ -58,9 +61,9 @@ public abstract class AbstractJsonProducer extends HttpServlet {
                 return true;
             else {
                 try {
-                    return "guest".equals(JCRSessionFactory.getInstance().getCurrentUserSession().getUser().getUsername());
+                    return !"guest".equals(JCRSessionFactory.getInstance().getCurrentUserSession().getUser().getUsername());
                 } catch (RepositoryException e) {
-                    logger.error("", e);  //TODO: review me, I'm generated
+                    logger.error("", e);
                     return false;
                 }
             }
