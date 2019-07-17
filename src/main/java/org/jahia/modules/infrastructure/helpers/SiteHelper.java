@@ -1,6 +1,7 @@
 package org.jahia.modules.infrastructure.helpers;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.jackrabbit.core.data.DataStoreException;
 import org.jahia.api.Constants;
 import org.jahia.bin.listeners.JahiaContextLoaderListener;
@@ -82,8 +83,11 @@ public class SiteHelper {
         return -1L;
     }
 
-    public static void exportToFile(String exportPath, Set<String> siteKeys, boolean exportLive)
-            throws Exception {
+    public static void exportToFile(String exportPath, Set<String> siteKeys) throws RepositoryException {
+        exportToFile(exportPath, siteKeys, true, null);
+    }
+
+    public static void exportToFile(String exportPath, Set<String> siteKeys, boolean exportLive, String customXSLPath) throws RepositoryException {
 
         final Map<String, Object> params = new HashMap<String, Object>(15);
 
@@ -101,7 +105,8 @@ public class SiteHelper {
         params.put(ImportExportService.INCLUDE_LIVE_EXPORT, exportLive);
         params.put(ImportExportService.INCLUDE_USERS, true);
         params.put(ImportExportService.INCLUDE_ROLES, true);
-        final String cleanupXsl = JahiaContextLoaderListener.getServletContext().getRealPath("/WEB-INF/etc/repository/export/cleanup.xsl");
+        final String cleanupXsl = StringUtils.isNotBlank(customXSLPath) ? customXSLPath :
+                JahiaContextLoaderListener.getServletContext().getRealPath("/WEB-INF/etc/repository/export/cleanup-custom.xsl");
         params.put(ImportExportService.XSL_PATH, cleanupXsl);
 
         JCRTemplate.getInstance().doExecuteWithSystemSessionAsUser(null, Constants.LIVE_WORKSPACE, null, new JCRCallback<Void>() {
