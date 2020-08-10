@@ -26,7 +26,7 @@ public class ModuleVersionsPurgeActivator implements BundleActivator {
     public void start(BundleContext context) throws Exception {
         if (!SettingsBean.getInstance().isProcessingServer()) return;
         final boolean isActive = Boolean.parseBoolean(SettingsBean.getInstance().getPropertiesFile().getProperty("modules.versions.autoPurge", "false"));
-        if (isActive) return;
+        if (!isActive) return;
 
         context.addBundleListener(bundleListener = new BundleListener() {
 
@@ -41,16 +41,19 @@ public class ModuleVersionsPurgeActivator implements BundleActivator {
                 if (!(header instanceof String) || !"true".equalsIgnoreCase((String) header)) return;
                 final String symbolicName = changedBundle.getSymbolicName();
                 final Version version = changedBundle.getVersion();
-                logger.info(String.format("Bundle %s-%s started, let's scan for lower versions installed", symbolicName, version.toString()));
+                logger.info(String.format("Bundle %s-%s started, let's scan for lower versions installed", symbolicName, version));
                 for (Bundle b : context.getBundles()) {
-                    if (b.getSymbolicName().equals(symbolicName) && b.getVersion().compareTo(version) < 0) {
-                        logger.info(String.format("Detected a module to purge: %s-%s (%s)", b.getSymbolicName(), b.getVersion().toString(), b.getBundleId()));
+                    final String bundleSN = b.getSymbolicName();
+                    final Version bundleVersion = b.getVersion();
+                    if (bundleSN.equals(symbolicName) && bundleVersion.compareTo(version) < 0) {
+                        final long bundleId = b.getBundleId();
+                        logger.info(String.format("Detected a module to purge: %s-%s (%s)", bundleSN, bundleVersion, bundleId));
                         try {
                             final ModuleManager moduleManager = (ModuleManager) SpringContextSingleton.getBean("ModuleManager");
                             moduleManager.uninstall(BundleInfo.fromBundle(changedBundle).getKey(), null);
                             b.uninstall();
                         } catch (BundleException e) {
-                            logger.error(String.format("Impossible to uninstall the bundle %s-%s (%s)", b.getSymbolicName(), b.getVersion().toString(), b.getBundleId()), e);
+                            logger.error(String.format("Impossible to uninstall the bundle %s-%s (%s)", bundleSN, bundleVersion, bundleId), e);
                         } catch (NoSuchBeanDefinitionException nsbde) {
                             logger.error("Impossible to load the ModuleManager");
                         }
