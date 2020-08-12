@@ -50,10 +50,7 @@ public class ModuleVersionsPurgeActivator implements BundleActivator {
                         logger.info(String.format("Detected a module to purge: %s-%s (%s)", bundleSN, bundleVersion, bundleId));
                         try {
                             final ModuleManager moduleManager = (ModuleManager) SpringContextSingleton.getBean("ModuleManager");
-                            moduleManager.uninstall(BundleInfo.fromBundle(changedBundle).getKey(), null);
-                            b.uninstall();
-                        } catch (BundleException e) {
-                            logger.error(String.format("Impossible to uninstall the bundle %s-%s (%s)", bundleSN, bundleVersion, bundleId), e);
+                            moduleManager.uninstall(BundleInfo.fromBundle(b).getKey(), null);
                         } catch (NoSuchBeanDefinitionException nsbde) {
                             logger.error("Impossible to load the ModuleManager");
                         }
