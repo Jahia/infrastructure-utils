@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
+import java.util.Arrays;
+
 public class ModuleVersionsPurgeActivator implements BundleActivator {
 
     private static final Logger logger = LoggerFactory.getLogger(ModuleVersionsPurgeActivator.class);
@@ -42,20 +44,10 @@ public class ModuleVersionsPurgeActivator implements BundleActivator {
                 final String symbolicName = changedBundle.getSymbolicName();
                 final Version version = changedBundle.getVersion();
                 logger.info(String.format("Bundle %s-%s started, let's scan for lower versions installed", symbolicName, version));
-                for (Bundle b : context.getBundles()) {
-                    final String bundleSN = b.getSymbolicName();
-                    final Version bundleVersion = b.getVersion();
-                    if (bundleSN.equals(symbolicName) && bundleVersion.compareTo(version) < 0) {
-                        final long bundleId = b.getBundleId();
-                        logger.info(String.format("Detected a module to purge: %s-%s (%s)", bundleSN, bundleVersion, bundleId));
-                        try {
-                            final ModuleManager moduleManager = (ModuleManager) SpringContextSingleton.getBean("ModuleManager");
-                            moduleManager.uninstall(BundleInfo.fromBundle(b).getKey(), null);
-                        } catch (NoSuchBeanDefinitionException nsbde) {
-                            logger.error("Impossible to load the ModuleManager");
-                        }
-                    }
-                }
+                Arrays.stream(context.getBundles())
+                        .filter(b -> symbolicName.equals(b.getSymbolicName()))
+                        .filter(b -> version.compareTo(b.getVersion()) > 0)
+                        .forEach(ModuleVersionsPurgeActivator::uninstall);
             }
         });
     }
@@ -64,5 +56,16 @@ public class ModuleVersionsPurgeActivator implements BundleActivator {
     public void stop(BundleContext context) throws Exception {
         if (bundleListener != null)
             context.removeBundleListener(bundleListener);
+    }
+
+    private static void uninstall(Bundle b) {
+        final long bundleId = b.getBundleId();
+        logger.info(String.format("Detected a module to purge: %s-%s (%s)", b.getSymbolicName(), b.getVersion(), bundleId));
+        try {
+            final ModuleManager moduleManager = (ModuleManager) SpringContextSingleton.getBean("ModuleManager");
+            moduleManager.uninstall(BundleInfo.fromBundle(b).getKey(), null);
+        } catch (NoSuchBeanDefinitionException nsbde) {
+            logger.error("Impossible to load the ModuleManager");
+        }
     }
 }
